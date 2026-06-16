@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/aes2/__init__.py
+src/aes2/data.py
+src/aes2/features.py
+src/aes2/metrics.py
+src/aes2/paths.py
+src/aes2/train_tfidf.py
+src/aes2/train_transformer.py
+src/aes2.egg-info/PKG-INFO
+src/aes2.egg-info/SOURCES.txt
+src/aes2.egg-info/dependency_links.txt
+src/aes2.egg-info/top_level.txt
+tests/test_metrics.py
