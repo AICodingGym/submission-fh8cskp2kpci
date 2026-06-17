@@ -52,3 +52,80 @@ aicodinggym mle submit learning-agency-lab-automated-essay-scoring-2 \
 The 4070 Ti / CUDA 11.8 path should start with `microsoft/deberta-v3-base`,
 `max_length=512`, fp16, batch size 4-8, and gradient accumulation 2-4.
 Use stratified folds and optimize thresholds for QWK.
+
+If direct access to `huggingface.co` fails, download the model through a
+reachable mirror first:
+
+```bash
+mkdir -p models/hf
+HF_ENDPOINT=https://hf-mirror.com huggingface-cli download \
+  microsoft/deberta-v3-base \
+  --local-dir models/hf/microsoft_deberta-v3-base \
+  --local-dir-use-symlinks False
+```
+
+Then point training at the local directory and force offline loading:
+
+```bash
+python -m aes2.train_transformer \
+  --model-name models/hf/microsoft_deberta-v3-base \
+  --local-files-only \
+  --fold 0 \
+  --batch-size 4 \
+  --grad-accum 4 \
+  --epochs 4 \
+  --fp16
+```
+
+Quick single-fold GPU run:
+
+```bash
+python -m aes2.train_transformer \
+  --model-name microsoft/deberta-v3-base \
+  --fold 0 \
+  --batch-size 4 \
+  --grad-accum 4 \
+  --epochs 4 \
+  --fp16
+```
+
+Full 5-fold ensemble:
+
+```bash
+python -m aes2.train_transformer \
+  --model-name microsoft/deberta-v3-base \
+  --fold -1 \
+  --batch-size 4 \
+  --grad-accum 4 \
+  --epochs 4 \
+  --fp16
+```
+
+Outputs are written to `outputs/models/` and `outputs/submissions/`.
+
+## H100 Background Training
+
+For an H100 server with `models/hf/microsoft_deberta-v3-large` already
+downloaded locally, start the large 768-token 5-fold run in the background:
+
+DeBERTa v3 uses SentencePiece. If the environment does not already have it,
+install `sentencepiece` before launching.
+
+```bash
+chmod +x scripts/run_h100_deberta_large_len768_5fold.sh
+chmod +x scripts/launch_h100_deberta_large_len768_5fold.sh
+
+./scripts/launch_h100_deberta_large_len768_5fold.sh
+```
+
+The launcher writes a PID file and log under `logs/`. Follow progress with:
+
+```bash
+tail -f logs/h100_deberta_large_len768_5fold_*.log
+```
+
+The foreground command is available as:
+
+```bash
+./scripts/run_h100_deberta_large_len768_5fold.sh
+```
